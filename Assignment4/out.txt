@@ -1,0 +1,59 @@
+           sym 1 1 1
+           sym 1 2 101
+main       proc 1005 2 2
+           sym 2 1 1
+           sym 2 2 1
+           sym 2 3 1000
+           sym 2 1003 1
+           sym 2 1004 1
+           sym 2 1005 1
+           ldc 4
+           str 2 1003
+           ldc 1
+           neg
+           str 2 1004
+$$4        nop
+           lod 2 1003
+           ldc 0
+           gt
+           fjp $$5
+           lod 2 1004
+           str 2 1005
+$$2        nop
+           ldc 1
+           fjp $$3
+           ldp
+           lod 2 1004
+           call write
+           lod 2 1005
+           ldc 1
+           add
+           str 2 1005
+$$0        nop
+           lod 2 1005
+           ldc 3
+           gt
+           fjp $$1
+           ujp $$3
+$$1        nop
+           ujp $$2
+$$3        nop
+           lod 2 1003
+           ldc 2
+           div
+           str 2 1003
+           lod 2 1004
+           ldc 1
+           add
+           str 2 1004
+           lod 2 1004
+           inc
+           str 2 1004
+           ujp $$4
+$$5        nop
+           ret
+           end
+           bgn 101
+           ldp
+           call main
+           end
