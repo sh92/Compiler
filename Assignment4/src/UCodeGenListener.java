@@ -15,11 +15,6 @@ public class UCodeGenListener extends MiniCBaseListener {
     int defaultIndentation = 11;
     private int labelNum = 0;
 
-    private int depth = 0;
-    private int ifDepth = 0;
-    private int whileDepth = 0;
-    private static boolean isFirst = true;
-
 
     @Override
     public void enterProgram(MiniCParser.ProgramContext ctx) {
@@ -131,7 +126,6 @@ public class UCodeGenListener extends MiniCBaseListener {
 
 
     public void enterFun_decl(MiniCParser.Fun_declContext ctx) {
-        depth++;
         StringBuilder func_ucode = new StringBuilder();
         String name = ctx.getChild(1).getText();
         int offset = 1;
@@ -246,7 +240,6 @@ public class UCodeGenListener extends MiniCBaseListener {
                 if (tmpStack.peek().get("scope").equals(name))
                     tmpStack.pop();
         }
-        depth--;
     }
 
     private int processDeclaration(ParseTree child, int offset, StringBuilder ucode) {
@@ -325,8 +318,6 @@ public class UCodeGenListener extends MiniCBaseListener {
         sbuf.append("$$" + (labelNum + 1) + getIndentation(defaultIndentation - 2 - String.valueOf(labelNum + 1).length()) + "nop\n");
 
         String str = sbuf.toString();
-//        if (depth == 1 && whileDepth == 0)
-//            Stmt.put(stmt, str);
 
         if (count > 0) {
             Stmt.put(stmt, str);
@@ -360,9 +351,6 @@ public class UCodeGenListener extends MiniCBaseListener {
         sbuf.append("$$" + (labelNum + 1) + getIndentation(defaultIndentation - 2 - String.valueOf(labelNum + 1).length()) + "nop\n");
 
         String str = sbuf.toString();
-
-        if (depth == 1 && ifDepth == 0)
-            Stmt.put(stmt, str);
 
         if (count > 0)
             Stmt.put(stmt, str);
@@ -573,41 +561,6 @@ public class UCodeGenListener extends MiniCBaseListener {
     }
 
 
-    @Override
-    public void enterIf_stmt(MiniCParser.If_stmtContext ctx) {
-        ifDepth++;
-        depth++;
-        if (isFirst) {
-            isFirst = false;
-        }
-    }
-
-    @Override
-    public void exitIf_stmt(MiniCParser.If_stmtContext ctx) {
-        if (ifDepth == 1) {
-            isFirst = true;
-        }
-        depth--;
-        ifDepth--;
-    }
-
-    @Override
-    public void enterWhile_stmt(MiniCParser.While_stmtContext ctx) {
-        if (isFirst) {
-            isFirst = false;
-        }
-        depth++;
-        whileDepth++;
-    }
-
-    @Override
-    public void exitWhile_stmt(MiniCParser.While_stmtContext ctx) {
-        if (whileDepth == 1) {
-            isFirst = true;
-        }
-        depth--;
-        whileDepth--;
-    }
 
     private StringBuilder getIndentation(int indent) {
         StringBuilder indentation = new StringBuilder();
