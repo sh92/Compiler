@@ -8,7 +8,6 @@ int i;
 x = 4;
 j=-1;
 
-
 while (x>0) {
         i=j;
         while(1){

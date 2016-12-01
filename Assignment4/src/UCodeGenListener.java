@@ -325,8 +325,8 @@ public class UCodeGenListener extends MiniCBaseListener {
         sbuf.append("$$" + (labelNum + 1) + getIndentation(defaultIndentation - 2 - String.valueOf(labelNum + 1).length()) + "nop\n");
 
         String str = sbuf.toString();
-        if (depth == 1 && whileDepth == 0)
-            Stmt.put(stmt, str);
+//        if (depth == 1 && whileDepth == 0)
+//            Stmt.put(stmt, str);
 
         if (count > 0) {
             Stmt.put(stmt, str);
@@ -440,6 +440,7 @@ public class UCodeGenListener extends MiniCBaseListener {
             exprProperty.put(ctx, ucode.toString());
             return;
         }
+
 
         if (ctx.getText().contains("(")) {
             expr_call_function_ucode(ctx, ucode);
