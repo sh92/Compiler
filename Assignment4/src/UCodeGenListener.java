@@ -108,9 +108,9 @@ public class UCodeGenListener extends MiniCBaseListener {
         }
         globalSize = offset - 1;
 
-        ucode.append(getIndentation(defaultIndentation) + "bgn " + globalSize + "\n");
+        ucode.append(getIndentation(defaultIndentation) + "bgn\t" + globalSize + "\n");
         ucode.append(getIndentation(defaultIndentation) + "ldp\n");
-        ucode.append(getIndentation(defaultIndentation) + "call main\n");
+        ucode.append(getIndentation(defaultIndentation) + "call\tmain\n");
         ucode.append(getIndentation(defaultIndentation) + "end\n");
         mainStartStack.push(ucode.toString());
     }
@@ -131,7 +131,7 @@ public class UCodeGenListener extends MiniCBaseListener {
         int offset = 1;
         offset = initUcodeParamInFunc(ctx, func_ucode, name, offset);
         offset = initUcodeLocalInFunc(ctx, func_ucode, name, offset);
-        String ucode = name + getIndentation(defaultIndentation - name.length()) + "proc " + (offset - 1) + " 2 " + "2\n";
+        String ucode = name + getIndentation(defaultIndentation - name.length()) + "proc\t" + (offset - 1) + " 2 " + "2\n";
         ucode += func_ucode.toString();
 
         fileWriteUcode(ucode, true);
@@ -165,7 +165,7 @@ public class UCodeGenListener extends MiniCBaseListener {
         }
         value_stack.push(values);
         symbolTBLMap.put(varName, value_stack);
-        func_ucode.append(getIndentation(defaultIndentation) + "sym 2 " + offset + " 1\n");
+        func_ucode.append(getIndentation(defaultIndentation) + "sym\t2 " + offset + " 1\n");
         offset++;
         return offset;
     }
@@ -181,7 +181,7 @@ public class UCodeGenListener extends MiniCBaseListener {
         }
         value_stack.push(values);
         symbolTBLMap.put(varName, value_stack);
-        func_ucode.append(getIndentation(defaultIndentation) + "sym 2 " + offset + " " + array_size + "\n");
+        func_ucode.append(getIndentation(defaultIndentation) + "sym\t2 " + offset + " " + array_size + "\n");
         offset += Integer.parseInt(array_size);
         return offset;
     }
@@ -202,7 +202,7 @@ public class UCodeGenListener extends MiniCBaseListener {
             }
             param_stack.push(values);
             symbolTBLMap.put(paramName, param_stack);
-            func_ucode.append(getIndentation(defaultIndentation) + "sym 2 " + offset + " 1\n");
+            func_ucode.append(getIndentation(defaultIndentation) + "sym\t2 " + offset + " 1\n");
             offset++;
         }
         return offset;
@@ -260,7 +260,7 @@ public class UCodeGenListener extends MiniCBaseListener {
                 break;
             default:
         }
-        String txt = getIndentation(defaultIndentation) + "sym 1 " + offset + " " + "1\n";
+        String txt = getIndentation(defaultIndentation) + "sym\t1 " + offset + " " + "1\n";
         fileWriteUcode(txt, true);
         String name = child.getChild(1).getText();
         String value = child.getChild(3).getText();
@@ -279,7 +279,7 @@ public class UCodeGenListener extends MiniCBaseListener {
         String type = child.getChild(0).getText();
         String name = child.getChild(1).getText();
         int array_size = Integer.parseInt(child.getChild(3).getText());
-        String txt = getIndentation(defaultIndentation) + "sym 1 " + offset + " " + (offset + array_size - 1) + "\n";
+        String txt = getIndentation(defaultIndentation) + "sym\t1 " + offset + " " + (offset + array_size - 1) + "\n";
         fileWriteUcode(txt, true);
         System.out.print(txt);
         values.put("kind", "arrayVar");
@@ -304,7 +304,7 @@ public class UCodeGenListener extends MiniCBaseListener {
             if (expr != null) {
                 count++;
                 sbuf.append(expr);
-                sbuf.append(getIndentation(defaultIndentation) + "fjp $$" + (labelNum + 1) + "\n");
+                sbuf.append(getIndentation(defaultIndentation) + "fjp\t$$" + (labelNum + 1) + "\n");
                 continue;
             }
 
@@ -314,7 +314,7 @@ public class UCodeGenListener extends MiniCBaseListener {
             }
 
         }
-        sbuf.append(getIndentation(defaultIndentation) + "ujp " + "$$" + String.valueOf(labelNum) + "\n");
+        sbuf.append(getIndentation(defaultIndentation) + "ujp\t" + "$$" + String.valueOf(labelNum) + "\n");
         sbuf.append("$$" + (labelNum + 1) + getIndentation(defaultIndentation - 2 - String.valueOf(labelNum + 1).length()) + "nop\n");
 
         String str = sbuf.toString();
@@ -336,13 +336,13 @@ public class UCodeGenListener extends MiniCBaseListener {
             if (expr != null) {
                 count++;
                 sbuf.append(expr);
-                sbuf.append(getIndentation(defaultIndentation) + "fjp $$" + (labelNum + 1) + "\n");
+                sbuf.append(getIndentation(defaultIndentation) + "fjp\t$$" + (labelNum + 1) + "\n");
                 continue;
             }
             if (ChildStmt != null) {
                 count++;
                 if (ChildStmt.equals("break")) {
-                    sbuf.append(getIndentation(defaultIndentation) + "ujp " + "$$" + String.valueOf(labelNum + 3) + "\n");
+                    sbuf.append(getIndentation(defaultIndentation) + "ujp\t" + "$$" + String.valueOf(labelNum + 3) + "\n");
                     continue;
                 }
                 sbuf.append(ChildStmt);
@@ -350,12 +350,10 @@ public class UCodeGenListener extends MiniCBaseListener {
         }
         sbuf.append("$$" + (labelNum + 1) + getIndentation(defaultIndentation - 2 - String.valueOf(labelNum + 1).length()) + "nop\n");
 
-        String str = sbuf.toString();
-
         if (count > 0)
-            Stmt.put(stmt, str);
+            Stmt.put(stmt, sbuf.toString());
 
-        labelNum = labelNum + 2;
+        labelNum += 2;
     }
 
     private void processFuncHeader(ParseTree child, StringBuilder ucode) {
@@ -424,18 +422,25 @@ public class UCodeGenListener extends MiniCBaseListener {
             ucode.append(s1).
                     append(getIndentation(defaultIndentation) + "dec" + "\n").
                     append(s1.replace("lod", "str"));
-            ;
+
+            exprProperty.put(ctx, ucode.toString());
+            return;
+        }
+        if (isInteger(ctx.getText())) {
+            if(isUniaryOperator(ctx, ucode, ctx.getText())){
+                return;
+            }
+            ucode.append(getIndentation(defaultIndentation) + "ldc\t" + ctx.getText() + "\n");
             exprProperty.put(ctx, ucode.toString());
             return;
         }
 
-
+        String str = ctx.getText();
         if (ctx.getText().contains("(")) {
             expr_call_function_ucode(ctx, ucode);
             return;
         }
 
-        String str = ctx.getText();
 
         if (str.equals("break")) {
             ucode.append(str);
@@ -443,34 +448,38 @@ public class UCodeGenListener extends MiniCBaseListener {
             return;
         }
 
-        if (isInteger(str)) {
-            exprConstantUcode(ctx, ucode, str);
-            return;
-        }
         if (str.contains("[")) {
-            exprArrayUcode(ctx, ucode, str);
+            exprArrayVariableUcode(ctx, ucode, str);
             return;
         }
+
         exprVariableUcode(ctx, ucode);
     }
 
     private void exprVariableUcode(MiniCParser.ExprContext ctx, StringBuilder ucode) {
         String str;
         str = symbolTBLMap.get(ctx.getText()).peek().get("offset");
-        ucode.append(getIndentation(defaultIndentation) + "lod 2 " + str + "\n");
+        ucode.append(getIndentation(defaultIndentation) + "lod\t2 " + str + "\n");
         exprProperty.put(ctx, ucode.toString());
     }
 
-    private void exprConstantUcode(MiniCParser.ExprContext ctx, StringBuilder ucode, String str) {
+    private boolean isUniaryOperator(MiniCParser.ExprContext ctx, StringBuilder ucode, String str) {
         if (str.startsWith("-")) {
             str = str.substring(1);
-            ucode.append(getIndentation(defaultIndentation) + "ldc " + str + "\n");
+            ucode.append(getIndentation(defaultIndentation) + "ldc\t" + str + "\n");
             ucode.append(getIndentation(defaultIndentation) + "neg" + "\n");
-        } else {
-            ucode.append(getIndentation(defaultIndentation) + "ldc " + str + "\n");
+            exprProperty.put(ctx, ucode.toString());
+            return true;
         }
-        exprProperty.put(ctx, ucode.toString());
-        return;
+
+        if(str.startsWith("!")){
+            str = str.substring(1);
+            ucode.append(getIndentation(defaultIndentation) + "ldc\t" + str + "\n");
+            ucode.append(getIndentation(defaultIndentation) + "notop" + "\n");
+            exprProperty.put(ctx, ucode.toString());
+            return true;
+        }
+        return  false;
     }
 
     private void expr_binaryOP_Ucode(MiniCParser.ExprContext ctx, String op) {
@@ -478,8 +487,7 @@ public class UCodeGenListener extends MiniCBaseListener {
         String s2 = exprProperty.get(ctx.expr(1));
 
         if (s1 != null && s2 != null) {
-            String operation = null;
-            operation = binaryOP_Ucode(op);
+            String operation = binaryOP_Ucode(op);
             StringBuilder result = new StringBuilder();
             result.append(s1).append(s2).append(getIndentation(defaultIndentation) + operation + "\n");
             exprProperty.put(ctx, result.toString());
@@ -487,16 +495,12 @@ public class UCodeGenListener extends MiniCBaseListener {
     }
 
     private void expr_binary_assign_ucode(MiniCParser.ExprContext ctx, StringBuilder ucode) {
-        String s2;
-        Stack<Map<String, String>> valueStack;
-        Map<String, String> values = null;
-        Map<String, String> values2 = null;
-        s2 = exprProperty.get(ctx.expr(0));
         String varName = ctx.getChild(0).getText();
-        valueStack = symbolTBLMap.get(varName);
-        values = valueStack.peek();
+        String s2 = exprProperty.get(ctx.expr(0));
+        Stack<Map<String, String>> valueStack = symbolTBLMap.get(varName);
+        Map<String, String> values = valueStack.peek();
         ucode.append(s2);
-        ucode.append(getIndentation(defaultIndentation) + "str 2 " + values.get("offset") + "\n");
+        ucode.append(getIndentation(defaultIndentation) + "str\t2 " + values.get("offset") + "\n");
         exprProperty.put(ctx, ucode.toString());
     }
 
@@ -506,18 +510,22 @@ public class UCodeGenListener extends MiniCBaseListener {
             for (String arg : ctx.args().getText().split(",")) {
                 Stack<Map<String, String>> tmpStack = symbolTBLMap.get(arg);
                 if (isInteger(arg)) {
-                    ucode.append(getIndentation(defaultIndentation) + "ldc " + arg + "\n");
+                    ucode.append(getIndentation(defaultIndentation) + "ldc\t" + arg + "\n");
                 } else {
-                    ucode.append(getIndentation(defaultIndentation) + "lod 2 ");
+                    if(tmpStack.peek().get("kind").equals("arrayVar")) {
+                        ucode.append(getIndentation(defaultIndentation) + "lda\t2 ");
+                    }else if(tmpStack.peek().get("kind").equals("simpleVar")){
+                        ucode.append(getIndentation(defaultIndentation) + "lod\t2 ");
+                    }
                     ucode.append(tmpStack.peek().get("offset") + "\n");
                 }
             }
-            ucode.append(getIndentation(defaultIndentation) + "call " + ctx.getChild(0).getText() + "\n");
+            ucode.append(getIndentation(defaultIndentation) + "call\t" + ctx.getChild(0).getText() + "\n");
             exprProperty.put(ctx, ucode.toString());
         }
     }
 
-    private void exprArrayUcode(MiniCParser.ExprContext ctx, StringBuilder ucode, String str) {
+    private void exprArrayVariableUcode(MiniCParser.ExprContext ctx, StringBuilder ucode, String str) {
         if (str.contains("=")) {
             expr_array_assign(ctx, ucode, str);
             return;
@@ -530,8 +538,8 @@ public class UCodeGenListener extends MiniCBaseListener {
         String name_offset = symbolTBLMap.get(name).peek().get("offset");
         String index = ctx.expr(0).getText();
         String offset_index = symbolTBLMap.get(index).peek().get("offset");
-        ucode.append(getIndentation(11) + "lod 2 " + offset_index + "\n");
-        ucode.append(getIndentation(11) + "lod 2 " + name_offset + "\n");
+        ucode.append(getIndentation(11) + "lod\t2 " + offset_index + "\n");
+        ucode.append(getIndentation(11) + "lod\t2 " + name_offset + "\n");
         ucode.append(getIndentation(11) + "add\n");
         ucode.append(getIndentation(11) + "ldi\n");
         exprProperty.put(ctx, ucode.toString());
@@ -544,10 +552,10 @@ public class UCodeGenListener extends MiniCBaseListener {
         String offset_index = symbolTBLMap.get(index).peek().get("offset");
         String value = ctx.expr(1).getText();
         String offset_value = symbolTBLMap.get(value).peek().get("offset");
-        ucode.append(getIndentation(defaultIndentation) + "lod 2 " + offset_index + "\n");
-        ucode.append(getIndentation(defaultIndentation) + "lod 2 " + name_offset + "\n");
+        ucode.append(getIndentation(defaultIndentation) + "lod\t2 " + offset_index + "\n");
+        ucode.append(getIndentation(defaultIndentation) + "lod\t2 " + name_offset + "\n");
         ucode.append(getIndentation(defaultIndentation) + "add\n");
-        ucode.append(getIndentation(defaultIndentation) + "lod 2 " + offset_value + "\n");
+        ucode.append(getIndentation(defaultIndentation) + "lod\t2 " + offset_value + "\n");
         ucode.append(getIndentation(defaultIndentation) + "sti\n");
         exprProperty.put(ctx, ucode.toString());
     }
@@ -614,9 +622,11 @@ public class UCodeGenListener extends MiniCBaseListener {
             case "-":
                 return "sub";
             case "*":
-                return "mul";
+                return "mult";
             case "/":
                 return "div";
+            case "%":
+                return "mod";
             case ">":
                 return "gt";
             case "<":
