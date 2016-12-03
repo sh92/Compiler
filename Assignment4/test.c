@@ -19,14 +19,12 @@ while (x>0) {
 
             if(i>3){
                 break;
-            }else{
-            write(j);
             }
+            write(j);
         }
         x = x / 2;
         j = j + 1 ;
         ++j;
-
 
 }
 write(100);

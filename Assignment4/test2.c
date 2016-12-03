@@ -19,6 +19,6 @@ void setElt(int array[],int size){
 
 int getElt(int pos, int array[])
 {
-    return array[pos];
+    return array[pos+1];
 }
 

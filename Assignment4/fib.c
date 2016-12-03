@@ -1,6 +1,7 @@
 int foo(int n) {
-	if (n < 3)
+	if (n < 3){
 	    return 1;
+	    }
 	return foo(n - 1) + foo(n - 2);
 }
 
