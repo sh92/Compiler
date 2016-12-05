@@ -62,9 +62,9 @@ public class UCodeGenListener extends MiniCBaseListener {
         if (ctx.getChildCount() > 0) {
             if (ctx.expr_stmt() != null)
                 printExprOutOfBlock(ctx);
-            else if (ctx.compound_stmt() != null)    // compound_stmt일 때
+            else if (ctx.compound_stmt() != null)
                 putStatement(ctx);
-            else if (ctx.if_stmt() != null)            // if_stmt일 때
+            else if (ctx.if_stmt() != null)
                 processIFStmt(ctx);
             else if (ctx.while_stmt() != null)
                 processWHILEStmt(ctx);
@@ -77,22 +77,15 @@ public class UCodeGenListener extends MiniCBaseListener {
         String returnStmt = ReturnStmt.get(ctx);
         if (returnStmt != null) {
             Stmt.put(ctx, returnStmt);
-            System.out.println("#");
             return;
         }
-        String s = ctx.getText();
         StringBuilder ucode = new StringBuilder();
         if (ctx.getText().startsWith("return")) {
-            s = s.replace("return", "");
-            s = s.replace(" ", "");
-            s = s.replace(";", "");
             String exp = exprProperty.get(ctx.return_stmt().expr());
             ucode.append(exp);
-
             ucode.append(getIndentation(defaultIndentation) + "retv" + "\n");
             Stmt.put(ctx, ucode.toString());
         }
-
     }
 
     @Override
@@ -124,9 +117,6 @@ public class UCodeGenListener extends MiniCBaseListener {
         }
     }
 
-    private boolean ChildStartWith(MiniCParser.StmtContext ctx, String prefix) {
-        return ctx.getChild(0).getText().startsWith(prefix);
-    }
 
     void codeGen(MiniCParser.ProgramContext ptr) {
         int globalSize;
@@ -397,11 +387,9 @@ public class UCodeGenListener extends MiniCBaseListener {
                 sbuf.append(getIndentation(defaultIndentation) + "tjp\t$$if" + (labelNum) + "\n");
                 sbuf.append(getIndentation(defaultIndentation) + "ujp\t$$else" + (labelNum) + "\n");
             }
-
             sbuf.append("$$if" + (labelNum) + getIndentation(defaultIndentation - 4 - Integer.toString(labelNum).length()) + "nop\n");
             String stmtIfTrue = Stmt.get(stmt.getChild(0).getChild(4));
             String exprStmtIfTrue = exprProperty.get(stmt.getChild(0).getChild(4));
-
             if (exprStmtIfTrue != null) {
                 sbuf.append(exprStmtIfTrue);
             } else if (stmtIfTrue != null) {
@@ -416,8 +404,6 @@ public class UCodeGenListener extends MiniCBaseListener {
             sbuf.append("$$else" + (labelNum) + getIndentation(defaultIndentation - 6 - Integer.toString(labelNum).length()) + "nop\n");
             String stmtElse = Stmt.get(stmt.getChild(0).getChild(6));
             String exprStmtElse = exprProperty.get(stmt.getChild(0).getChild(6));
-
-
             if (exprStmtElse != null) {
                 sbuf.append(exprStmtIfTrue);
             } else if (stmtElse != null) {

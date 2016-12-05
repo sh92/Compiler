@@ -11,21 +11,19 @@ k=0;
 y[0]=1;
 y[1]=0;
 
-while (x>0) {
+while (x>y[1]) {
         i=++j;
 
-        while(1){
+        while(y[0] and 1){
             i=i+1;
 
             if(i>3){
                 break;
+            }else{
+                write(i);
             }
-            write(j);
         }
         x = x / 2;
-        j = j + 1 ;
-        ++j;
 
 }
-write(100);
 }

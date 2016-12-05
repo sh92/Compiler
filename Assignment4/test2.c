@@ -1,6 +1,7 @@
+int list[100];
 void main()
 {
-    int list[100];
+
     int element;
 
     setElt(list,100);

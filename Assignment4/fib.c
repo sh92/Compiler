@@ -8,8 +8,8 @@ int foo(int n) {
 int main()
 {
    int x;
-   x = 4;
-   x = foo(4);
+   x = 5;
+   x = foo(x);
    write(x);
    return 0;
 }
